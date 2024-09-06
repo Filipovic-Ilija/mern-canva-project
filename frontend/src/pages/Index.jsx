@@ -2,10 +2,13 @@ import React, { useState } from "react";
 import { RxCross2 } from "react-icons/rx";
 import { BiLogoGmail } from "react-icons/bi";
 import { FaFacebook } from "react-icons/fa";
+import api from "../utils/api";
+import toast from "react-hot-toast";
 
 const Index = () => {
   const [type, setType] = useState("");
   const [show, setShow] = useState(false);
+  const [loader, setLoader] = useState(false);
   const [state, setState] = useState({
     name: "",
     email: "",
@@ -17,6 +20,45 @@ const Index = () => {
       ...state,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const user_register = async (e) => {
+    e.preventDefault();
+
+    try {
+      setLoader(true);
+      const { data } = await api.post("/api/user-register", state);
+      setLoader(false);
+      localStorage.setItem("canva_token", data.token);
+      setState({
+        name: "",
+        email: "",
+        password: "",
+      });
+      window.location.href = "/";
+    } catch (error) {
+      setLoader(false);
+      toast.error(error.response.data.message);
+    }
+  };
+
+  const user_login = async (e) => {
+    e.preventDefault();
+
+    try {
+      setLoader(true);
+      const { data } = await api.post("/api/user-login", state);
+      setLoader(false);
+      localStorage.setItem("canva_token", data.token);
+      setState({
+        email: "",
+        password: "",
+      });
+      window.location.href = "/";
+    } catch (error) {
+      setLoader(false);
+      toast.error(error.response.data.message);
+    }
   };
 
   return (
@@ -37,7 +79,7 @@ const Index = () => {
             Login and Sign up in seconds
           </h2>
           {type === "signin" && (
-            <form>
+            <form onSubmit={user_login}>
               <div className="flex flex-col gap-3 mb-3 text-white">
                 <label htmlFor="email">Email</label>
                 <input
@@ -65,8 +107,11 @@ const Index = () => {
               </div>
 
               <div>
-                <button className="px-3 py-2 rounded-md bg-purple-500 w-full outline-none hover:bg-purple-600 text-white">
-                  Sign In
+                <button
+                  disabled={loader}
+                  className="px-3 py-2 rounded-md bg-purple-500 w-full outline-none hover:bg-purple-600 text-white"
+                >
+                  {loader ? "loading.." : "Sign Up"}
                 </button>
               </div>
 
@@ -98,15 +143,15 @@ const Index = () => {
             </form>
           )}
           {type === "signup" && (
-            <form>
+            <form onSubmit={user_register}>
               <div className="flex flex-col gap-3 mb-3 text-white">
                 <label htmlFor="name">Name</label>
                 <input
                   onChange={inputHandle}
                   type="text"
-                  name="Name"
+                  name="name"
                   id="name"
-                  placeholder="Name"
+                  placeholder="name"
                   value={state.name}
                   className="px-3 py-2 rounded-md border outline-none border-[#5c5c5e] focus:border-purple-500 bg-transparent"
                 />
@@ -139,8 +184,11 @@ const Index = () => {
               </div>
 
               <div>
-                <button className="px-3 py-2 rounded-md bg-purple-500 w-full outline-none hover:bg-purple-600 text-white">
-                  Sign Up
+                <button
+                  disabled={loader}
+                  className="px-3 py-2 rounded-md bg-purple-500 w-full outline-none hover:bg-purple-600 text-white"
+                >
+                  {loader ? "loading.." : "Sign Up"}
                 </button>
               </div>
 
